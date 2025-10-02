@@ -1,9 +1,9 @@
-name: 'Terraform CI'
+name: 'Terraform CD'
 
 on:
   push:
     branches:
-     - main 
+      - main
   workflow_dispatch:
 
 permissions:
@@ -11,41 +11,46 @@ permissions:
 
 jobs:
   terraform:
-    name: 'Terraform-cd'
+    name: 'Terraform-CD'
     runs-on: ubuntu-latest
     environment: production
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
 
     steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v4
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-    
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # Install the latest version of Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        
+      # Azure Login (using Service Principal)
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-    - name: Terraform Init
-      run: terraform init
-    - name: Download Plan
-      uses: actions/download-artifact@v4
-      with:
-        name: tfplan
-        path: .
-    - name: Terraform Apply
-      env:
-          ARM_SUBSCRIPTION_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
-          ARM_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
-          ARM_CLIENT_SECRET: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
-          ARM_TENANT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
-      run: terraform apply --auto-approve tfplan
+      # Download the tfplan from Azure Blob Storage
+      - name: Download Plan from Azure Blob Storage
+        run: |
+          # Decode the secret JSON and extract individual values
+          AZURE_STORAGE_ACCOUNT_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_NAME)
+          AZURE_STORAGE_CONTAINER_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_CONTAINER_NAME)
+          AZURE_STORAGE_ACCOUNT_KEY=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_KEY)
+
+          # Download the tfplan file from Azure Blob Storage
+          az storage blob download \
+            --account-name $AZURE_STORAGE_ACCOUNT_NAME \
+            --container-name $AZURE_STORAGE_CONTAINER_NAME \
+            --name tfplan \
+            --file tfplan \
+            --auth-mode key \
+            --account-key $AZURE_STORAGE_ACCOUNT_KEY
+
+      # Apply the tfplan to the infrastructure
+      - name: Terraform Apply
+        run: terraform apply --auto-approve tfplan

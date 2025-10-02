@@ -3,7 +3,7 @@ name: 'Terraform CI'
 on:
   push:
     branches:
-     - main 
+      - main 
   pull_request:
 
 permissions:
@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
@@ -25,24 +24,25 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    # Install the latest version of Terraform CLI
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
     
+    # Azure Login (using Service Principal)
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    # Initialize Terraform
     - name: Terraform Init
       run: terraform init
 
-    # Checks that all Terraform configuration files adhere to a canonical format
+    # Check Terraform format
     - name: Terraform Format
       run: terraform fmt -check
 
-    # Generates an execution plan for Terraform
+    # Run Terraform Plan
     - name: Terraform Plan
       env:
           ARM_SUBSCRIPTION_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
@@ -51,8 +51,26 @@ jobs:
           ARM_TENANT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
       run: terraform plan -out=tfplan -input=false
 
-    - name: Upload Plan 
+    # Upload the tfplan file to Azure Blob Storage
+    - name: Upload Plan to Azure Blob Storage
+      run: |
+        # Decode the secret JSON and extract individual values
+        AZURE_STORAGE_ACCOUNT_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_NAME)
+        AZURE_STORAGE_CONTAINER_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_CONTAINER_NAME)
+        AZURE_STORAGE_ACCOUNT_KEY=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_KEY)
+
+        # Upload the tfplan file to the Azure Blob Storage
+        az storage blob upload \
+          --account-name $AZURE_STORAGE_ACCOUNT_NAME \
+          --container-name $AZURE_STORAGE_CONTAINER_NAME \
+          --name tfplan \
+          --file tfplan \
+          --auth-mode key \
+          --account-key $AZURE_STORAGE_ACCOUNT_KEY
+
+    # Optional: Upload the Plan as an artifact for further steps or debugging
+    - name: Upload Plan as Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: tfplan 
-        path: tfplan 
+        name: tfplan
+        path: tfplan
