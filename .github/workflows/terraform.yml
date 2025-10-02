@@ -34,6 +34,10 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Install jq
+      run: sudo apt-get install jq
+
+
     # Initialize Terraform
     - name: Terraform Init
       run: terraform init
