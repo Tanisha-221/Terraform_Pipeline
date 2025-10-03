@@ -53,28 +53,34 @@ jobs:
           ARM_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
           ARM_CLIENT_SECRET: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
           ARM_TENANT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
-      run: terraform plan -out=tfplan -input=false
+      run: terraform plan -out=tfplan.out -input=false
 
-    # Upload the tfplan file to Azure Blob Storage
-    - name: Upload Plan to Azure Blob Storage
-      run: |
-        # Decode the secret JSON and extract individual values
-        AZURE_STORAGE_ACCOUNT_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_NAME)
-        AZURE_STORAGE_CONTAINER_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_CONTAINER_NAME)
-        AZURE_STORAGE_ACCOUNT_KEY=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_KEY)
-
-        # Upload the tfplan file to the Azure Blob Storage
-        az storage blob upload \
-          --account-name $AZURE_STORAGE_ACCOUNT_NAME \
-          --container-name $AZURE_STORAGE_CONTAINER_NAME \
-          --name tfplan \
-          --file tfplan \
-          --auth-mode key \
-          --account-key $AZURE_STORAGE_ACCOUNT_KEY
-
-    # Optional: Upload the Plan as an artifact for further steps or debugging
-    - name: Upload Plan as Artifact
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: tfplan
-        path: tfplan
+        name: tfplan.out
+        path: tfplan.out
+
+    # Upload the tfplan file to Azure Blob Storage
+    # - name: Upload Plan to Azure Blob Storage
+    #   run: |
+    #     # Decode the secret JSON and extract individual values
+    #     AZURE_STORAGE_ACCOUNT_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_NAME)
+    #     AZURE_STORAGE_CONTAINER_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_CONTAINER_NAME)
+    #     AZURE_STORAGE_ACCOUNT_KEY=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_KEY)
+
+    #     # Upload the tfplan file to the Azure Blob Storage
+    #     az storage blob upload \
+    #       --account-name $AZURE_STORAGE_ACCOUNT_NAME \
+    #       --container-name $AZURE_STORAGE_CONTAINER_NAME \
+    #       --name tfplan \
+    #       --file tfplan \
+    #       --auth-mode key \
+    #       --account-key $AZURE_STORAGE_ACCOUNT_KEY
+
+    # # Optional: Upload the Plan as an artifact for further steps or debugging
+    # - name: Upload Plan as Artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: tfplan
+    #     path: tfplan
