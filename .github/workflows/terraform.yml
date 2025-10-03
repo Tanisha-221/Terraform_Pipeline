@@ -65,19 +65,12 @@ jobs:
       with: 
         name: terraform-plan
         path: artifacts/tfplan.out
-    - name: check folder contents of artifacts folder
-      run: ls -la artifacts
-
     
     - name: List files
       run: ls -R
 
     - name: PWD path
       run: pwd
-   
-    - name: Check artifact location
-      run: |
-        ls -l /home/runner/work/Terraform_Pipeline/Terraform_Pipeline/artifacts  
 
     - name: Download artifact
       uses: actions/download-artifact@v4
