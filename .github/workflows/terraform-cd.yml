@@ -41,8 +41,8 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: terraform-plan
-          path: artifacts/tfplan.out
+          name: tfplan.out
+          path: artifacts/
 
       
       - name: List files
