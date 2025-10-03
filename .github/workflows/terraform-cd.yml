@@ -2,7 +2,7 @@ name: 'Terraform CD'
 
 on:
   workflow_run:
-    workflows: ["terraform.yml"] # Name of the workflow to monitor
+    workflows: ["Terraform CI"] # Name of the workflow to monitor
     types: [completed]
   workflow_dispatch:
 
@@ -43,6 +43,11 @@ jobs:
         with:
           name: terraform-plan
           path: .
+
+      
+      - name: List files
+        run: ls -R
+
 
       # Apply the tfplan to the infrastructure
       - name: Terraform Apply
