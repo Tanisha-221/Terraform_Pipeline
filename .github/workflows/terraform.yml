@@ -71,3 +71,6 @@ jobs:
     
     - name: List files
       run: ls -R
+
+    - name: PWD path
+      run: pwd
