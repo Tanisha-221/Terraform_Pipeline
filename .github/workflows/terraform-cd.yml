@@ -42,28 +42,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:        
           name: terraform-plan
-          path: /home/runner/work/Terraform_Pipeline/Terraform_Pipeline/artifacts
+          path: artifacts
+      - name: check folder contents of artifacts folder
+        run: ls -la artifacts 
 
-      # Check if artifact exists after download
-      - name: Verify artifact location
-        run: |
-          ls -l /home/runner/work/Terraform_Pipeline/Terraform_Pipeline/artifacts
- 
-      # Check if the tfplan file exists
-      - name: Check tfplan file existence
-        run: |
-          if [ ! -f /home/runner/work/Terraform_Pipeline/Terraform_Pipeline/artifacts/tfplan.out ]; then
-            echo "tfplan.out not found!";
-            exit 1;
-          else
-            echo "tfplan.out found!";
-          fi
+      # List files in the artifacts directory (for debugging purposes)  
+      - name: List files
+        run: ls -R artifacts
 
-      
       - name: List files
         run: ls -R
 
-
       # Apply the tfplan to the infrastructure
       - name: Terraform Apply
-        run: terraform apply --auto-approve artifacts/tfplan.out
+        run: terraform apply --auto-approve tfplan.out
