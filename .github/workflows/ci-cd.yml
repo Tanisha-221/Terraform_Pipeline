@@ -1,4 +1,4 @@
-name: 'CI-CD Pipeline'
+name: 'Terraform CI'
 
 on:
   push:
@@ -66,3 +66,6 @@ jobs:
     
     - name: List files
       run: ls -R
+
+    - name: Terraform Apply
+      run: terraform apply --auto-approve artifacts/tfplan.out
