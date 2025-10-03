@@ -53,8 +53,8 @@ jobs:
           ARM_CLIENT_SECRET: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
           ARM_TENANT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
       run: | 
-      mkdir -p artifacts 
-      terraform plan -out=artifacts/tfplan.out -input=false
+        mkdir -p artifacts
+        terraform plan -out=artifacts/tfplan.out -input=false
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
