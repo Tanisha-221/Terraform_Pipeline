@@ -45,8 +45,7 @@ jobs:
     - name: Terraform Format
       run: terraform fmt -check
 
-    - name: check folder contents of artifacts folder
-      run: ls -la artifacts
+    
 
     # Run Terraform Plan
     - name: Terraform Plan
@@ -59,12 +58,15 @@ jobs:
         mkdir -p artifacts 
         terraform plan -out=artifacts/tfplan.out -input=false
 
+
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with: 
         name: terraform-plan
         path: artifacts/tfplan.out
-
+    - name: check folder contents of artifacts folder
+      run: ls -la artifacts
 
     
     - name: List files
