@@ -1,12 +1,13 @@
-name: 'CI=CD Pipeline'
+name: 'Terraform CI'
 
 on:
   push:
     branches:
-      - main 
+     - main 
+  pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   terraform:
@@ -14,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
@@ -23,48 +25,45 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Install the latest version of Terraform CLI
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
     
-    # Azure Login (using Service Principal)
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # - name: Install jq
-    #   run: sudo apt-get install jq
-
-
-    # Initialize Terraform
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: terraform init
 
-    # Check Terraform format
+    # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
       run: terraform fmt -check
 
-    # Run Terraform Plan
+    # Generates an execution plan for Terraform
     - name: Terraform Plan
       env:
           ARM_SUBSCRIPTION_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
           ARM_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
           ARM_CLIENT_SECRET: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
           ARM_TENANT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
-      run: terraform plan -out=artifacts/tfplan.out -input=false
-        terraform plan -out=artifacts/tfplan.out -input=false
+      run: terraform plan -out=tfplan -input=false
 
-    - name: Upload artifact
+    - name: Upload Plan 
       uses: actions/upload-artifact@v4
-      with: 
-        name: terraform-plan
-        path: artifacts/tfplan.out
-
-
+      with:
+        name: tfplan 
+        path: tfplan 
+    - name: check folder contents of artifacts folder
+      run: ls -la artifacts 
     
-    - name: List files
-      run: ls -R
-
-    - name: Terraform Apply
-      run: terraform apply --auto-approve artifacts/tfplan.out
+    - name: Terraform apply
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      env:
+          ARM_SUBSCRIPTION_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
+          ARM_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
+          ARM_CLIENT_SECRET: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
+          ARM_TENANT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
+      run: terraform apply -input=false tfplan

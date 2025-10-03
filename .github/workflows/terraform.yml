@@ -74,3 +74,12 @@ jobs:
 
     - name: PWD path
       run: pwd
+   
+    - name: Check artifact location
+      run: |
+        ls -l /home/runner/work/Terraform_Pipeline/Terraform_Pipeline/artifacts  
+
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:        
+        name: terraform-plan
