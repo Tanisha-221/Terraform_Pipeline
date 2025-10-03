@@ -43,15 +43,13 @@ jobs:
         with:        
           name: terraform-plan
           path: artifacts
-      - name: check folder contents of artifacts folder
-        run: ls -la artifacts 
+      
+      
+      - name: Check folder contents of artifacts folder
+        run: ls -la artifacts
 
-      # List files in the artifacts directory (for debugging purposes)  
-      - name: List files
-        run: ls -R artifacts
-
-      - name: List files
-        run: ls -R
+      - name: Move tfplan.out to root
+        run: mv artifacts/terraform-plan/tfplan.out tfplan.out
 
       # Apply the tfplan to the infrastructure
       - name: Terraform Apply
