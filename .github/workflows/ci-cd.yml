@@ -1,4 +1,4 @@
-name: 'Terraform CI'
+name: 'CI-CD Pipeline'
 
 on:
   push:
@@ -56,9 +56,7 @@ jobs:
       with:
         name: tfplan 
         path: tfplan 
-    - name: check folder contents of artifacts folder
-      run: ls -la artifacts 
-    
+  
     - name: Terraform apply
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
