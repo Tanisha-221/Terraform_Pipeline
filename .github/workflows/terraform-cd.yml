@@ -40,7 +40,7 @@ jobs:
       
       
       - name: Debug Workflow Context
-        run: |
+        run:|
         echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
         echo "Run ID: ${{ github.event.workflow_run.id }}"
 
