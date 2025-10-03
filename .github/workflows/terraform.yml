@@ -64,7 +64,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with: 
         name: terraform-plan
-        path: artifacts/tfplan.out
+        path: artifacts/
     
     - name: List files
       run: ls -R

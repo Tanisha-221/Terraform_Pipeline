@@ -37,6 +37,13 @@ jobs:
       # Initialize Terraform
       - name: Terraform Init
         run: terraform init
+      
+      
+      - name: Debug Workflow Context
+        run: |
+        echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
+        echo "Run ID: ${{ github.event.workflow_run.id }}"
+
 
       - name: Download artifact
         uses: actions/download-artifact@v4
