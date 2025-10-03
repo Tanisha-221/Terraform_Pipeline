@@ -67,7 +67,7 @@ resource "azurerm_virtual_machine" "main" {
   }
 }
 
-resource "azurerm_virtual_network" "main" {
+resource "azurerm_virtual_network" "AVn" {
   name                = "TA-network"
   address_space       = ["10.0.1.0/16"]
   location            = azurerm_resource_group.example.location
