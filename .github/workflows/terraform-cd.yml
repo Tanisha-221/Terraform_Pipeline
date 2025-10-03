@@ -1,9 +1,9 @@
 name: 'Terraform CD'
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["terraform.yml"] # Name of the workflow to monitor
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -34,9 +34,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # - name: Install jq
-      #   run: sudo apt-get install jq
-
       # Initialize Terraform
       - name: Terraform Init
         run: terraform init
@@ -46,23 +43,6 @@ jobs:
         with:
           name: tfplan.out
           path: .
-
-      # Download the tfplan from Azure Blob Storage
-      # - name: Download Plan from Azure Blob Storage
-      #   run: |
-      #     # Decode the secret JSON and extract individual values
-      #     AZURE_STORAGE_ACCOUNT_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_NAME)
-      #     AZURE_STORAGE_CONTAINER_NAME=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_CONTAINER_NAME)
-      #     AZURE_STORAGE_ACCOUNT_KEY=$(echo "${{ secrets.AZURE_STORAGE_CREDENTIALS }}" | jq -r .AZURE_STORAGE_ACCOUNT_KEY)
-
-      #     # Download the tfplan file from Azure Blob Storage
-      #     az storage blob download \
-      #       --account-name $AZURE_STORAGE_ACCOUNT_NAME \
-      #       --container-name $AZURE_STORAGE_CONTAINER_NAME \
-      #       --name tfplan \
-      #       --file tfplan \
-      #       --auth-mode key \
-      #       --account-key $AZURE_STORAGE_ACCOUNT_KEY
 
       # Apply the tfplan to the infrastructure
       - name: Terraform Apply
