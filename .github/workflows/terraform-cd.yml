@@ -43,19 +43,42 @@ jobs:
             echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
             echo "Run ID: ${{ github.event.workflow_run.id }}"
 
+      
+      - name: Get artifact download URL
+        uses: actions/github-script@v6
+        id: get-artifact
+        with:
+          script: |
+              const runId = ${{ github.event.workflow_run.id }};
+              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId
+               });
+
+              const match = artifacts.data.artifacts.find(a => a.name === "terraform-plan");
+              if (!match) {
+                 throw new Error("Artifact not found");
+               }
+
+              return match.archive_download_url;
+
+
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:        
-          name: terraform-plan
-          path: artifacts
+        run: |
+          curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -o terraform-plan.zip \
+              "${{ steps.get-artifact.outputs.result }}"
+          unzip terraform-plan.zip -d terraform-plan
+
       
       
       - name: Check folder contents of artifacts folder
-        run: ls -la artifacts
+        run: ls -la terraform-plan
 
       - name: Move tfplan.out to root
-        run: mv artifacts/terraform-plan/tfplan.out tfplan.out
+        run: mv terraform-plan/tfplan.out tfplan.out
 
       # Apply the tfplan to the infrastructure
       - name: Terraform Apply
