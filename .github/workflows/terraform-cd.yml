@@ -40,9 +40,10 @@ jobs:
 
       - name: Download artifact
         uses: actions/download-artifact@v4
-        with:
-          name: tfplan.out
-          path: artifacts/
+        with:        
+          name: terraform-plan
+          path: artifacts
+
 
       
       - name: List files
@@ -51,4 +52,4 @@ jobs:
 
       # Apply the tfplan to the infrastructure
       - name: Terraform Apply
-        run: terraform apply --auto-approve tfplan.out
+        run: terraform apply --auto-approve artifacts/tfplan.out
