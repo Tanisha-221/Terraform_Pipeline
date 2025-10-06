@@ -28,6 +28,9 @@ Create modular and reusable Terraform code
 ---
 ## Tech Stack 
 ```
+- **Terraform** - Infrastructure as Code
+- **GitHub Actions** - CI/CD Automation
+- **Git & Github** - Version Control and documentation 
 ```
 ----
 ## Prerequisites 
@@ -41,14 +44,48 @@ Create modular and reusable Terraform code
 ## Steps to build the project 
 ### File structure
 ```
-Terraform Pipline 
+Terraform Pipline
+|-github
+  |-terraform.yml
 |- main.tf 
 |-variable.tf
 |-provider.tf
-|-output.tf
-|-pipeline.yml
-|-README.md 
+|-README.md
+|- Version.tf
 ```
 ### Step 1 :
 - Create a github repository 
 - Clone your repository in VS code- git clone Repository URL
+  ```
+   Step 1: Create GitHub Repository
+Shellgit clone <repository-URL>cd <repository-name>Show more lines
+```
+### Step 2: Set Up Terraform Project
+```
+Install Terraform.
+Create main.tf, variables.tf, provider.tf, and terraform.tfvars.
+Initialize and apply:
+```
+Shellterraform initterraform planShow more lines
+### Step 3: Configure Azure
+[Click Here for provider.tf](https://github.com/Tanisha-221/Terraform_Pipeline/blob/main/provider.tf)
+[Click here for version.tf](https://github.com/Tanisha-221/Terraform_Pipeline/blob/main/version.tf)
+### Step 4: Create GitHub Actions Workflow
+```
+.github/workflows/terraform.yml:
+[Click here for pipeline](https://github.com/Tanisha-221/Terraform_Pipeline/blob/main/.github/workflows/terraform.yml)
+### Step 5: Secure Secrets
+Add Azure credentials in GitHub Secrets:
+```
+ARM_CLIENT_ID
+ARM_CLIENT_SECRET
+ARM_SUBSCRIPTION_ID
+ARM_TENANT_ID
+```
+### Step 6: Deploy Infrastructure
+Push code to trigger pipeline:
+
+### Conclusion
+This project demonstrates how to combine Terraform and GitHub Actions for automated, consistent, and scalable infrastructure deployments on Azure.
+
+
